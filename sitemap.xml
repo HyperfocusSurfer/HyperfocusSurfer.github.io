@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://hyperfocussurfer.github.io/</loc>
+    </url>
+    <url>
+        <loc>https://hyperfocussurfer.github.io/nix-whacks/</loc>
+        <lastmod>2025-04-28</lastmod>
+    </url>
+    <url>
+        <loc>https://hyperfocussurfer.github.io/pinouts/</loc>
+        <lastmod>2025-04-20</lastmod>
+    </url>
+    <url>
+        <loc>https://hyperfocussurfer.github.io/squid-api/</loc>
+        <lastmod>2025-04-19</lastmod>
+    </url>
+    <url>
+        <loc>https://hyperfocussurfer.github.io/tags/</loc>
+    </url>
+    <url>
+        <loc>https://hyperfocussurfer.github.io/tags/nix/</loc>
+    </url>
+    <url>
+        <loc>https://hyperfocussurfer.github.io/tags/reverse-engineering/</loc>
+    </url>
+    <url>
+        <loc>https://hyperfocussurfer.github.io/tags/web/</loc>
+    </url>
+</urlset>

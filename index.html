@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title></title>
+    <meta name="description" content="">
+
+    
+
+
+
+    
+
+
+    <!-- css -->
+    <noscript>
+        <style>
+            .theme-switcher {
+                display: none;
+            }
+        </style>
+    </noscript>
+    <link rel="stylesheet" href="/reset.css">
+    <link rel="stylesheet" href="/feather.css">
+    
+    
+    <link rel="stylesheet" href="/syntax-theme-light.css" media="screen" />
+    <link rel="stylesheet" href="/syntax-theme-dark.css" media="screen and (prefers-color-scheme: dark)" />
+    
+    
+
+    <link rel="stylesheet" id="syntax" />
+
+    
+
+    
+
+    
+    
+</head>
+
+<body >
+    <div class="root">
+
+        <nav>
+            <div class="flex padded">
+                <div class="flex fill vcenter">
+                    <a href="/">
+                        <h4>Home</h4>
+                    </a>
+                </div>
+                
+                <button class="theme-switcher"></button>
+                
+            </div>
+            
+        </nav>
+
+
+
+        
+<div class="container">
+    <div class="posts">
+        
+        
+        <div class="post">
+            <div class='info'>
+                <span>2025 Apr 28</span>
+            </div>
+            <a class='header-link' href="&#x2F;nix-whacks&#x2F;">
+                <h4 class="title"> Nix whacks </h4>
+            </a>
+            <p>
+                A loose collection of useful nix snippets.
+Patch-in a PR while building a package
+Say, we want to include the 147th PR to done.fish
+
+append .diff or .patch to the url, which will redirect you to https:&#x2F;&#x2F;patch-diff.githubusercontent.com&#x2F;raw&#x2F;franciscolouren…
+            </p>
+            
+
+<div class='flex gap-small'>
+    
+    
+    <a href="https:&#x2F;&#x2F;hyperfocussurfer.github.io&#x2F;tags&#x2F;nix&#x2F;"><span class="chip">nix</span></a>
+    
+</div>
+
+        </div>
+        <hr />
+        
+        
+        
+        <div class="post">
+            <div class='info'>
+                <span>2025 Apr 20</span>
+            </div>
+            <a class='header-link' href="&#x2F;pinouts&#x2F;">
+                <h4 class="title"> On searching for pinouts </h4>
+            </a>
+            <p>
+                Sometimes when you&#x27;re trying to fix or piece together the inner workings of a piece of tech, you may stumble upon an IC that has neither datasheets nor even pinouts publicly available. Here&#x27;s one more relatively simple way that sometimes helps me find the…
+            </p>
+            
+
+<div class='flex gap-small'>
+    
+    
+    <a href="https:&#x2F;&#x2F;hyperfocussurfer.github.io&#x2F;tags&#x2F;reverse-engineering&#x2F;"><span class="chip">reverse-engineering</span></a>
+    
+</div>
+
+        </div>
+        <hr />
+        
+        
+        
+        <div class="post">
+            <div class='info'>
+                <span>2025 Apr 19</span>
+            </div>
+            <a class='header-link' href="&#x2F;squid-api&#x2F;">
+                <h4 class="title"> On basic &quot;reverse-engineering&quot; of simple web API&#x27;s </h4>
+            </a>
+            <p>
+                So, you have a not actively hostile* website you want to automate some actions with, like a nice music downloader squid.wtf.
+Let&#x27;s write a simple script to use it from the terminal.
+* i.e. without captchas on every corner and stuff
+Recording the network t…
+            </p>
+            
+
+<div class='flex gap-small'>
+    
+    
+    <a href="https:&#x2F;&#x2F;hyperfocussurfer.github.io&#x2F;tags&#x2F;web&#x2F;"><span class="chip">web</span></a>
+    
+</div>
+
+        </div>
+        <hr />
+        
+        
+    </div>
+</div>
+
+
+        <footer>
+            
+            <p>
+                Feather theme by <a href="https://doomy.org">doomy</a>&nbsp;&nbsp;-&nbsp;&nbsp; Built with <a
+                    href="https://getzola.org">Zola</a>
+            </p>
+            
+        </footer>
+    </div>
+    
+    <script>
+        function change_theme(theme) {
+            if (theme == "light") {
+                document.body.classList.remove("dark");
+                document.body.classList.add("light");
+                document.querySelector('#syntax').href = '/syntax-theme-light.css';
+            } else if (theme == "dark") {
+                document.body.classList.add("dark");
+                document.body.classList.remove("light");
+                document.querySelector('#syntax').href = '/syntax-theme-dark.css';
+            }
+            localStorage.setItem("theme", theme);
+        }
+
+        window.addEventListener('load', () => {
+            // Select the button
+            const theme = (function () {
+                const stored = localStorage.getItem("theme");
+                if (stored == "null") {
+                    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                        return "dark";
+                    } else {
+                        return "light";
+                    }
+                } else {
+                    return stored;
+                }
+            })();
+
+            change_theme(theme);
+
+            // Listen for a click on the button
+            document.querySelector(".theme-switcher").addEventListener("click", function () {
+                if (!document.body.classList.contains("dark")) {
+                    change_theme("dark");
+                } else {
+                    change_theme("light");
+                }
+            });
+
+        });
+    </script>
+    
+    <script src="/js/footnote.js"></script>
+</body>
+
+</html>

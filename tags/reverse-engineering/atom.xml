@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title> - reverse-engineering</title>
+    <link rel="self" type="application/atom+xml" href="https://hyperfocussurfer.github.io/tags/reverse-engineering/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-04-20T00:00:00+00:00</updated>
+    <id>https://hyperfocussurfer.github.io/tags/reverse-engineering/atom.xml</id>
+    <entry xml:lang="en">
+        <title>On searching for pinouts</title>
+        <published>2025-04-20T00:00:00+00:00</published>
+        <updated>2025-04-20T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io/pinouts/"/>
+        <id>https://hyperfocussurfer.github.io/pinouts/</id>
+        
+        <content type="html" xml:base="https://hyperfocussurfer.github.io/pinouts/">&lt;p&gt;Sometimes when you&#x27;re trying to fix or piece together the inner workings of a piece of tech, you may stumble upon an IC that has neither datasheets nor even pinouts publicly available. Here&#x27;s one more relatively simple way that sometimes helps me find the latter fellas.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;idea&quot;&gt;Idea&lt;&#x2F;h2&gt;
+&lt;p&gt;I utilize the fact that there are lots of leaked schematics publicly available, and they may contain the IC in question. For example, my backup of a telegram channel named &lt;a href=&quot;https:&#x2F;&#x2F;t.me&#x2F;schematicslaptop&quot;&gt;shematics&amp;amp;boardview laptop&lt;&#x2F;a&gt; I made a while back contains about 28GB of mostly pdf files, which you can search through with &lt;a href=&quot;https:&#x2F;&#x2F;gitlab.com&#x2F;pdfgrep&#x2F;pdfgrep&quot;&gt;pdfgrep&lt;&#x2F;a&gt; or &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;phiresky&#x2F;ripgrep-all&quot;&gt;ripgrep-all&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;obtaining-schematics&quot;&gt;Obtaining schematics&lt;&#x2F;h2&gt;
+&lt;p&gt;The most convenient way to bulk-download stuff from telegram that I&#x27;ve found is through &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;iyear&#x2F;tdl&quot;&gt;tdl&lt;&#x2F;a&gt;. Basically, you need to &lt;a href=&quot;https:&#x2F;&#x2F;docs.iyear.me&#x2F;tdl&#x2F;getting-started&#x2F;quick-start&#x2F;#login&quot;&gt;login&lt;&#x2F;a&gt; into your account and export the channel in question (either with the desktop client, or via tdl, the docs on downloads explain it well), then start &lt;a href=&quot;https:&#x2F;&#x2F;docs.iyear.me&#x2F;tdl&#x2F;guide&#x2F;download&#x2F;&quot;&gt;downloading&lt;&#x2F;a&gt;, sit back and relax.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;searching&quot;&gt;Searching&lt;&#x2F;h2&gt;
+&lt;p&gt;Is as easy as &lt;code&gt;rga -i &quot;ps8339&quot; -t pdf -l &amp;gt; ..&#x2F;ps8339.res&lt;&#x2F;code&gt;. This can also be extended into a telegram bot or something.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title></title>
+    <meta name="description" content="">
+
+    
+    
+
+    
+<meta property="og:title" content="On basic &quot;reverse-engineering&quot; of simple web API&#x27;s">
+<meta property="og:description" content="">
+<meta property="og:url" content="https:&#x2F;&#x2F;hyperfocussurfer.github.io&#x2F;squid-api&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="">
+
+
+
+    <!-- css -->
+    <noscript>
+        <style>
+            .theme-switcher {
+                display: none;
+            }
+        </style>
+    </noscript>
+    <link rel="stylesheet" href="/reset.css">
+    <link rel="stylesheet" href="/feather.css">
+    
+    
+    <link rel="stylesheet" href="/syntax-theme-light.css" media="screen" />
+    <link rel="stylesheet" href="/syntax-theme-dark.css" media="screen and (prefers-color-scheme: dark)" />
+    
+    
+
+    <link rel="stylesheet" id="syntax" />
+
+    
+
+    
+
+    
+    
+</head>
+
+<body >
+    <div class="root">
+
+        <nav>
+            <div class="flex padded">
+                <div class="flex fill vcenter">
+                    <a href="/">
+                        <h4>Home</h4>
+                    </a>
+                </div>
+                
+                <button class="theme-switcher"></button>
+                
+            </div>
+            
+        </nav>
+
+
+
+        
+<div class='container'>
+	<section class="post">
+		<div class="title-and-info">
+			<h2>On basic &quot;reverse-engineering&quot; of simple web API&#x27;s</h2>
+			<div class="info">
+				<span>2025 Apr 19</span>
+
+				
+
+				
+			</div>
+		</div>
+		<article>
+			
+			
+			
+			
+
+			
+
+
+			<p>So, you have a not actively hostile* website you want to automate some actions with, like a nice music downloader <code>squid.wtf</code>.
+Let's write a simple script to use it from the terminal.</p>
+<p>* i.e. without captchas on every corner and stuff</p>
+<h2 id="recording-the-network-traffic">Recording the network traffic</h2>
+<div >
+  <video width="100%" height="100%" controls>
+    <source src="https://github.com/HyperfocusSurfer/HyperfocusSurfer.github.io/raw/refs/heads/main/assets/squid&#x2F;initial_search_log.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+  </video> 
+</div>
+<p>To begin with, we need to record what the web page sends to the server and what responses it expects.
+To do so, open <a href="https://eu.qobuz.squid.wtf/">the webpage</a> in your browser of choice. I'll use zen, but the same is applicable to pretty much any of them.
+Then open the <code>devtools</code> on the <code>network</code> tab (<code>Ctrl+Shift+E</code> in my case, but you can also <code>Ctrl+Shift+I</code> and select the <code>network</code> tab, for example).
+Finally, type some album name, for example, <code>Haken - Vector</code> into the search bar, select some version of it to download, and see the log being populated with requests the page makes.</p>
+<h2 id="making-sense-of-the-network-log">Making sense of the network log</h2>
+<div >
+  <video width="100%" height="100%" controls>
+    <source src="https://github.com/HyperfocusSurfer/HyperfocusSurfer.github.io/raw/refs/heads/main/assets/squid&#x2F;unclip_devtools_find_request.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+  </video> 
+</div>
+<p>To make more space for the <code>devtools</code> window, you can unclip it from the browser by pressing <code>...</code> in its top right corner and choosing <code>Separate window</code> (or whatever you like). Then its a matter of selecting the queries that look promising. In my case, it's the second successful request (since the 1st one contained an extra dash and returned no albums).</p>
+<p>To find the request I need, I look</p>
+<ul>
+<li>at the <code>file</code> field in the response log -- <code>api/get-music?q=haken - vector&amp;offset=0</code> seems important enough, while a randomly-looking .jpg is clearly some kind of an asset (a cover art in this case);</li>
+<li>at the <code>domain</code> field -- <code>eu.qobus.squid.wtf</code> is the site we're using**, while <code>static.qobiz.com</code> also obviously stores assets;</li>
+<li>at the <code>response</code> and <code>request</code> (for POST requests only) tabs when the request is selected.</li>
+</ul>
+<p>** Technically, the webpage may use some other site's API, although it happens not too often.</p>
+<p>Since this is a rather simple case, determining what's what is straightforward. The webpage used the following endpoints:</p>
+<ul>
+<li><code>api/get-music?q=$query&amp;offset=$offset</code>, where q is the query (<code>haken - vector</code>), and offset is pagination in the form of (<code>10 * N</code>), i.e. it gets you the next 10 albums in case you haven't found the one you were looking for on the <code>N - 1</code>th page (<code>limit</code> field for albums says 10);</li>
+<li><code>api/get-album?album_id=$album_id</code> gets you info about the selected album and expects its id as input. The id is obtained from the results of the <code>get-music</code> call.</li>
+<li><code>api/download-music?track_id=$track_id&amp;quality=$quality</code> returns you a download link for the particular track_id (obtained from the <code>get-album</code> call). Right off the bat, I haven't noticed that exact value in the album info, so it can probably be left as 27 and delt with later in case it's not simply an internal way to refer to the best quality the track has (as opposed to something specific, like a 24-bit flac).</li>
+</ul>
+<h2 id="scripting">Scripting</h2>
+<p>When the process is more or less clear, those same requests can eqsily be performed from a script or a program (like a telegram bot or something).
+I usually do this by opening 2 windows side-by-side, one with python REPL, another one with whatever I'm writing (in this example, a python script).
+REPL is used to debug logic, which is then rewritten and sewn together in the actual program.</p>
+<p>The resulting PoC terminal wrapper could look something like this.</p>
+<pre data-lang="python" style="background-color:#2b303b;color:#c0c5ce;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#b48ead;">import </span><span>requests
+</span><span style="color:#b48ead;">import </span><span>json
+</span><span style="color:#b48ead;">from </span><span>urllib.parse </span><span style="color:#b48ead;">import </span><span>quote, urlencode
+</span><span>
+</span><span>base_url = &quot;</span><span style="color:#a3be8c;">https://eu.qobuz.squid.wtf/api/</span><span>&quot;
+</span><span>
+</span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">search</span><span>(</span><span style="color:#bf616a;">terms</span><span>: str, </span><span style="color:#bf616a;">offset</span><span>: int = </span><span style="color:#d08770;">0</span><span>):
+</span><span>    </span><span style="color:#65737e;">#https://get-music?q=haken%20-%20vector&amp;offset=0
+</span><span>    query = base_url + &quot;</span><span style="color:#a3be8c;">get-music?</span><span>&quot; + </span><span style="color:#bf616a;">urlencode</span><span>({
+</span><span>        &quot;</span><span style="color:#a3be8c;">q</span><span>&quot;: terms,
+</span><span>        &quot;</span><span style="color:#a3be8c;">offset</span><span>&quot;: </span><span style="color:#d08770;">0
+</span><span>    },
+</span><span>    </span><span style="color:#bf616a;">quote_via </span><span>= quote)
+</span><span>    response = requests.</span><span style="color:#bf616a;">get</span><span>(query)
+</span><span>    </span><span style="color:#b48ead;">if </span><span>response.ok:
+</span><span>        data = json.</span><span style="color:#bf616a;">loads</span><span>(response.content)
+</span><span>        </span><span style="color:#b48ead;">for </span><span>item </span><span style="color:#b48ead;">in </span><span>data[&quot;</span><span style="color:#a3be8c;">data</span><span>&quot;][&quot;</span><span style="color:#a3be8c;">albums</span><span>&quot;][&quot;</span><span style="color:#a3be8c;">items</span><span>&quot;]:
+</span><span>            </span><span style="color:#96b5b4;">print</span><span>(
+</span><span>                item[&quot;</span><span style="color:#a3be8c;">artist</span><span>&quot;][&quot;</span><span style="color:#a3be8c;">name</span><span>&quot;],
+</span><span>                item[&quot;</span><span style="color:#a3be8c;">title</span><span>&quot;],
+</span><span>                (item[&quot;</span><span style="color:#a3be8c;">version</span><span>&quot;] or &quot;&quot;),
+</span><span>                item[&quot;</span><span style="color:#a3be8c;">id</span><span>&quot;]
+</span><span>            )
+</span><span>
+</span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">getDownloadUrl</span><span>(</span><span style="color:#bf616a;">trackId</span><span>: int, </span><span style="color:#bf616a;">quality </span><span>= </span><span style="color:#d08770;">27</span><span>):
+</span><span>    </span><span style="color:#65737e;">#https://download-music?track_id=52848233&amp;quality=27
+</span><span>    query = base_url + &quot;</span><span style="color:#a3be8c;">download-music?</span><span>&quot; + </span><span style="color:#bf616a;">urlencode</span><span>({
+</span><span>        &quot;</span><span style="color:#a3be8c;">track_id</span><span>&quot;: trackId,
+</span><span>        &quot;</span><span style="color:#a3be8c;">quality</span><span>&quot;: quality
+</span><span>    },
+</span><span>    </span><span style="color:#bf616a;">quote_via </span><span>= quote)
+</span><span>    response = requests.</span><span style="color:#bf616a;">get</span><span>(query)
+</span><span>    </span><span style="color:#b48ead;">if </span><span>response.ok:
+</span><span>        data = json.</span><span style="color:#bf616a;">loads</span><span>(response.content)
+</span><span>        url = data[&quot;</span><span style="color:#a3be8c;">data</span><span>&quot;][&quot;</span><span style="color:#a3be8c;">url</span><span>&quot;]
+</span><span>        </span><span style="color:#b48ead;">return </span><span>url
+</span><span>
+</span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">downloadAlbum</span><span>(</span><span style="color:#bf616a;">id</span><span>: str):
+</span><span>    </span><span style="color:#65737e;">#https://get-album?album_id=rygp0c3z97ufb
+</span><span>    query = base_url + &quot;</span><span style="color:#a3be8c;">get-album?</span><span>&quot; + </span><span style="color:#bf616a;">urlencode</span><span>({
+</span><span>        &quot;</span><span style="color:#a3be8c;">album_id</span><span>&quot;: </span><span style="color:#96b5b4;">id
+</span><span>    },
+</span><span>    </span><span style="color:#bf616a;">quote_via </span><span>= quote)
+</span><span>    response = requests.</span><span style="color:#bf616a;">get</span><span>(query)
+</span><span>    </span><span style="color:#b48ead;">if </span><span>response.ok:
+</span><span>        data = json.</span><span style="color:#bf616a;">loads</span><span>(response.content)
+</span><span>        trackList = data[&quot;</span><span style="color:#a3be8c;">data</span><span>&quot;][&quot;</span><span style="color:#a3be8c;">tracks</span><span>&quot;][&quot;</span><span style="color:#a3be8c;">items</span><span>&quot;]
+</span><span>        fields_to_select = [&quot;</span><span style="color:#a3be8c;">track_number</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">title</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">version</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">id</span><span>&quot;]
+</span><span>        track_info = [{field: track[field] </span><span style="color:#b48ead;">for </span><span>field </span><span style="color:#b48ead;">in </span><span>fields_to_select} </span><span style="color:#b48ead;">for </span><span>track </span><span style="color:#b48ead;">in </span><span>trackList]
+</span><span>        </span><span style="color:#b48ead;">for </span><span>track </span><span style="color:#b48ead;">in </span><span>track_info:
+</span><span>            response = requests.</span><span style="color:#bf616a;">get</span><span>(</span><span style="color:#bf616a;">getDownloadUrl</span><span>(track[&quot;</span><span style="color:#a3be8c;">id</span><span>&quot;]))
+</span><span>            </span><span style="color:#b48ead;">if </span><span>response.ok:
+</span><span>                filename = </span><span style="color:#b48ead;">f</span><span>&quot;{track[&quot;</span><span style="color:#a3be8c;">track_number</span><span>&quot;]}</span><span style="color:#a3be8c;">. </span><span>{track[&quot;</span><span style="color:#a3be8c;">title</span><span>&quot;]}{&#39;</span><span style="color:#a3be8c;"> (</span><span>&#39; + track[&quot;</span><span style="color:#a3be8c;">version</span><span>&quot;] + &#39;</span><span style="color:#a3be8c;">)</span><span>&#39; </span><span style="color:#b48ead;">if </span><span>track[&quot;</span><span style="color:#a3be8c;">version</span><span>&quot;] </span><span style="color:#b48ead;">else </span><span>&quot;&quot;}</span><span style="color:#a3be8c;">.flac</span><span>&quot;
+</span><span>                </span><span style="color:#b48ead;">with </span><span style="color:#96b5b4;">open</span><span>(filename, &quot;</span><span style="color:#a3be8c;">wb</span><span>&quot;) </span><span style="color:#b48ead;">as </span><span>trackFile:
+</span><span>                    trackFile.</span><span style="color:#bf616a;">write</span><span>(response.content)
+</span><span>                </span><span style="color:#96b5b4;">print</span><span>(&quot;</span><span style="color:#a3be8c;">Saved:</span><span>&quot;, filename)
+</span><span>
+</span><span>
+</span><span style="color:#b48ead;">if </span><span>__name__ == &quot;</span><span style="color:#a3be8c;">__main__</span><span>&quot;:
+</span><span>    </span><span style="color:#96b5b4;">print</span><span>(&quot;</span><span style="color:#a3be8c;">Search: </span><span>&quot;, </span><span style="color:#bf616a;">end </span><span>= &#39;&#39;)
+</span><span>    </span><span style="color:#bf616a;">search</span><span>(</span><span style="color:#96b5b4;">input</span><span>())
+</span><span>    </span><span style="color:#96b5b4;">print</span><span>(&quot;</span><span style="color:#a3be8c;">Enter the id (last value) of the album to download: </span><span>&quot;, </span><span style="color:#bf616a;">end </span><span>= &#39;&#39;)
+</span><span>    </span><span style="color:#bf616a;">downloadAlbum</span><span>(</span><span style="color:#96b5b4;">input</span><span>())
+</span></code></pre>
+<p>To make it more usable, there needs to be some proper error handling with retries, possibly making use of pagination, and tagging music (since the resulting files lack those), but it goes out of the scope of the write-up. Also, it's not what I needed it for :)</p>
+
+			
+
+
+		</article>
+	</section>
+	
+	<div id="cusdis">
+		
+	</div>
+</div>
+
+
+        <footer>
+            
+            <p>
+                Feather theme by <a href="https://doomy.org">doomy</a>&nbsp;&nbsp;-&nbsp;&nbsp; Built with <a
+                    href="https://getzola.org">Zola</a>
+            </p>
+            
+        </footer>
+    </div>
+    
+    <script>
+        function change_theme(theme) {
+            if (theme == "light") {
+                document.body.classList.remove("dark");
+                document.body.classList.add("light");
+                document.querySelector('#syntax').href = '/syntax-theme-light.css';
+            } else if (theme == "dark") {
+                document.body.classList.add("dark");
+                document.body.classList.remove("light");
+                document.querySelector('#syntax').href = '/syntax-theme-dark.css';
+            }
+            localStorage.setItem("theme", theme);
+        }
+
+        window.addEventListener('load', () => {
+            // Select the button
+            const theme = (function () {
+                const stored = localStorage.getItem("theme");
+                if (stored == "null") {
+                    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                        return "dark";
+                    } else {
+                        return "light";
+                    }
+                } else {
+                    return stored;
+                }
+            })();
+
+            change_theme(theme);
+
+            // Listen for a click on the button
+            document.querySelector(".theme-switcher").addEventListener("click", function () {
+                if (!document.body.classList.contains("dark")) {
+                    change_theme("dark");
+                } else {
+                    change_theme("light");
+                }
+            });
+
+        });
+    </script>
+    
+    <script src="/js/footnote.js"></script>
+</body>
+
+</html>

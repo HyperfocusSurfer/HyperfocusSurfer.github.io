@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title> - web</title>
+    <link rel="self" type="application/atom+xml" href="https://hyperfocussurfer.github.io/tags/web/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-04-19T00:00:00+00:00</updated>
+    <id>https://hyperfocussurfer.github.io/tags/web/atom.xml</id>
+    <entry xml:lang="en">
+        <title>On basic &quot;reverse-engineering&quot; of simple web API&#x27;s</title>
+        <published>2025-04-19T00:00:00+00:00</published>
+        <updated>2025-04-19T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io/squid-api/"/>
+        <id>https://hyperfocussurfer.github.io/squid-api/</id>
+        
+        <content type="html" xml:base="https://hyperfocussurfer.github.io/squid-api/">&lt;p&gt;So, you have a not actively hostile* website you want to automate some actions with, like a nice music downloader &lt;code&gt;squid.wtf&lt;&#x2F;code&gt;.
+Let&#x27;s write a simple script to use it from the terminal.&lt;&#x2F;p&gt;
+&lt;p&gt;* i.e. without captchas on every corner and stuff&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;recording-the-network-traffic&quot;&gt;Recording the network traffic&lt;&#x2F;h2&gt;
+&lt;div &gt;
+  &lt;video width=&quot;100%&quot; height=&quot;100%&quot; controls&gt;
+    &lt;source src=&quot;https:&#x2F;&#x2F;github.com&#x2F;HyperfocusSurfer&#x2F;HyperfocusSurfer.github.io&#x2F;raw&#x2F;refs&#x2F;heads&#x2F;main&#x2F;assets&#x2F;squid&amp;#x2F;initial_search_log.mp4&quot; type=&quot;video&#x2F;mp4&quot;&gt;
+  Your browser does not support the video tag.
+  &lt;&#x2F;video&gt; 
+&lt;&#x2F;div&gt;
+&lt;p&gt;To begin with, we need to record what the web page sends to the server and what responses it expects.
+To do so, open &lt;a href=&quot;https:&#x2F;&#x2F;eu.qobuz.squid.wtf&#x2F;&quot;&gt;the webpage&lt;&#x2F;a&gt; in your browser of choice. I&#x27;ll use zen, but the same is applicable to pretty much any of them.
+Then open the &lt;code&gt;devtools&lt;&#x2F;code&gt; on the &lt;code&gt;network&lt;&#x2F;code&gt; tab (&lt;code&gt;Ctrl+Shift+E&lt;&#x2F;code&gt; in my case, but you can also &lt;code&gt;Ctrl+Shift+I&lt;&#x2F;code&gt; and select the &lt;code&gt;network&lt;&#x2F;code&gt; tab, for example).
+Finally, type some album name, for example, &lt;code&gt;Haken - Vector&lt;&#x2F;code&gt; into the search bar, select some version of it to download, and see the log being populated with requests the page makes.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;making-sense-of-the-network-log&quot;&gt;Making sense of the network log&lt;&#x2F;h2&gt;
+&lt;div &gt;
+  &lt;video width=&quot;100%&quot; height=&quot;100%&quot; controls&gt;
+    &lt;source src=&quot;https:&#x2F;&#x2F;github.com&#x2F;HyperfocusSurfer&#x2F;HyperfocusSurfer.github.io&#x2F;raw&#x2F;refs&#x2F;heads&#x2F;main&#x2F;assets&#x2F;squid&amp;#x2F;unclip_devtools_find_request.mp4&quot; type=&quot;video&#x2F;mp4&quot;&gt;
+  Your browser does not support the video tag.
+  &lt;&#x2F;video&gt; 
+&lt;&#x2F;div&gt;
+&lt;p&gt;To make more space for the &lt;code&gt;devtools&lt;&#x2F;code&gt; window, you can unclip it from the browser by pressing &lt;code&gt;...&lt;&#x2F;code&gt; in its top right corner and choosing &lt;code&gt;Separate window&lt;&#x2F;code&gt; (or whatever you like). Then its a matter of selecting the queries that look promising. In my case, it&#x27;s the second successful request (since the 1st one contained an extra dash and returned no albums).&lt;&#x2F;p&gt;
+&lt;p&gt;To find the request I need, I look&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;at the &lt;code&gt;file&lt;&#x2F;code&gt; field in the response log -- &lt;code&gt;api&#x2F;get-music?q=haken - vector&amp;amp;offset=0&lt;&#x2F;code&gt; seems important enough, while a randomly-looking .jpg is clearly some kind of an asset (a cover art in this case);&lt;&#x2F;li&gt;
+&lt;li&gt;at the &lt;code&gt;domain&lt;&#x2F;code&gt; field -- &lt;code&gt;eu.qobus.squid.wtf&lt;&#x2F;code&gt; is the site we&#x27;re using**, while &lt;code&gt;static.qobiz.com&lt;&#x2F;code&gt; also obviously stores assets;&lt;&#x2F;li&gt;
+&lt;li&gt;at the &lt;code&gt;response&lt;&#x2F;code&gt; and &lt;code&gt;request&lt;&#x2F;code&gt; (for POST requests only) tabs when the request is selected.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;** Technically, the webpage may use some other site&#x27;s API, although it happens not too often.&lt;&#x2F;p&gt;
+&lt;p&gt;Since this is a rather simple case, determining what&#x27;s what is straightforward. The webpage used the following endpoints:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;api&#x2F;get-music?q=$query&amp;amp;offset=$offset&lt;&#x2F;code&gt;, where q is the query (&lt;code&gt;haken - vector&lt;&#x2F;code&gt;), and offset is pagination in the form of (&lt;code&gt;10 * N&lt;&#x2F;code&gt;), i.e. it gets you the next 10 albums in case you haven&#x27;t found the one you were looking for on the &lt;code&gt;N - 1&lt;&#x2F;code&gt;th page (&lt;code&gt;limit&lt;&#x2F;code&gt; field for albums says 10);&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;api&#x2F;get-album?album_id=$album_id&lt;&#x2F;code&gt; gets you info about the selected album and expects its id as input. The id is obtained from the results of the &lt;code&gt;get-music&lt;&#x2F;code&gt; call.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;api&#x2F;download-music?track_id=$track_id&amp;amp;quality=$quality&lt;&#x2F;code&gt; returns you a download link for the particular track_id (obtained from the &lt;code&gt;get-album&lt;&#x2F;code&gt; call). Right off the bat, I haven&#x27;t noticed that exact value in the album info, so it can probably be left as 27 and delt with later in case it&#x27;s not simply an internal way to refer to the best quality the track has (as opposed to something specific, like a 24-bit flac).&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;scripting&quot;&gt;Scripting&lt;&#x2F;h2&gt;
+&lt;p&gt;When the process is more or less clear, those same requests can eqsily be performed from a script or a program (like a telegram bot or something).
+I usually do this by opening 2 windows side-by-side, one with python REPL, another one with whatever I&#x27;m writing (in this example, a python script).
+REPL is used to debug logic, which is then rewritten and sewn together in the actual program.&lt;&#x2F;p&gt;
+&lt;p&gt;The resulting PoC terminal wrapper could look something like this.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;python&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-python &quot;&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span&gt;requests
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span&gt;json
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;from &lt;&#x2F;span&gt;&lt;span&gt;urllib.parse &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span&gt;quote, urlencode
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;base_url = &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;eu.qobuz.squid.wtf&#x2F;api&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;search&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;terms&lt;&#x2F;span&gt;&lt;span&gt;: str, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;offset&lt;&#x2F;span&gt;&lt;span&gt;: int = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;):
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;#https:&#x2F;&#x2F;get-music?q=haken%20-%20vector&amp;amp;offset=0
+&lt;&#x2F;span&gt;&lt;span&gt;    query = base_url + &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;get-music?&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; + &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;urlencode&lt;&#x2F;span&gt;&lt;span&gt;({
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;q&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: terms,
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;offset&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;quote_via &lt;&#x2F;span&gt;&lt;span&gt;= quote)
+&lt;&#x2F;span&gt;&lt;span&gt;    response = requests.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;(query)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;response.ok:
+&lt;&#x2F;span&gt;&lt;span&gt;        data = json.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;loads&lt;&#x2F;span&gt;&lt;span&gt;(response.content)
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;item &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;in &lt;&#x2F;span&gt;&lt;span&gt;data[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;][&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;albums&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;][&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span&gt;(
+&lt;&#x2F;span&gt;&lt;span&gt;                item[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;artist&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;][&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;],
+&lt;&#x2F;span&gt;&lt;span&gt;                item[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;title&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;],
+&lt;&#x2F;span&gt;&lt;span&gt;                (item[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;version&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;] or &amp;quot;&amp;quot;),
+&lt;&#x2F;span&gt;&lt;span&gt;                item[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]
+&lt;&#x2F;span&gt;&lt;span&gt;            )
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;getDownloadUrl&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;trackId&lt;&#x2F;span&gt;&lt;span&gt;: int, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;quality &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;27&lt;&#x2F;span&gt;&lt;span&gt;):
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;#https:&#x2F;&#x2F;download-music?track_id=52848233&amp;amp;quality=27
+&lt;&#x2F;span&gt;&lt;span&gt;    query = base_url + &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;download-music?&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; + &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;urlencode&lt;&#x2F;span&gt;&lt;span&gt;({
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;track_id&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: trackId,
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;quality&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: quality
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;quote_via &lt;&#x2F;span&gt;&lt;span&gt;= quote)
+&lt;&#x2F;span&gt;&lt;span&gt;    response = requests.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;(query)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;response.ok:
+&lt;&#x2F;span&gt;&lt;span&gt;        data = json.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;loads&lt;&#x2F;span&gt;&lt;span&gt;(response.content)
+&lt;&#x2F;span&gt;&lt;span&gt;        url = data[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;][&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;url&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;url
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;downloadAlbum&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;: str):
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;#https:&#x2F;&#x2F;get-album?album_id=rygp0c3z97ufb
+&lt;&#x2F;span&gt;&lt;span&gt;    query = base_url + &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;get-album?&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; + &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;urlencode&lt;&#x2F;span&gt;&lt;span&gt;({
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;album_id&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;id
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;quote_via &lt;&#x2F;span&gt;&lt;span&gt;= quote)
+&lt;&#x2F;span&gt;&lt;span&gt;    response = requests.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;(query)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;response.ok:
+&lt;&#x2F;span&gt;&lt;span&gt;        data = json.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;loads&lt;&#x2F;span&gt;&lt;span&gt;(response.content)
+&lt;&#x2F;span&gt;&lt;span&gt;        trackList = data[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;][&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tracks&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;][&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]
+&lt;&#x2F;span&gt;&lt;span&gt;        fields_to_select = [&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;track_number&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;title&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;version&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]
+&lt;&#x2F;span&gt;&lt;span&gt;        track_info = [{field: track[field] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;field &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;in &lt;&#x2F;span&gt;&lt;span&gt;fields_to_select} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;track &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;in &lt;&#x2F;span&gt;&lt;span&gt;trackList]
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;track &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;in &lt;&#x2F;span&gt;&lt;span&gt;track_info:
+&lt;&#x2F;span&gt;&lt;span&gt;            response = requests.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;getDownloadUrl&lt;&#x2F;span&gt;&lt;span&gt;(track[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]))
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;response.ok:
+&lt;&#x2F;span&gt;&lt;span&gt;                filename = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;f&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;{track[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;track_number&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;. &lt;&#x2F;span&gt;&lt;span&gt;{track[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;title&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;]}{&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39; + track[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;version&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;] + &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;)&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;track[&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;version&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&amp;quot;}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.flac&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;with &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;open&lt;&#x2F;span&gt;&lt;span&gt;(filename, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;wb&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;as &lt;&#x2F;span&gt;&lt;span&gt;trackFile:
+&lt;&#x2F;span&gt;&lt;span&gt;                    trackFile.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;write&lt;&#x2F;span&gt;&lt;span&gt;(response.content)
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span&gt;(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Saved:&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, filename)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;__name__ == &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;__main__&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span&gt;(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Search: &lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;end &lt;&#x2F;span&gt;&lt;span&gt;= &amp;#39;&amp;#39;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;search&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;input&lt;&#x2F;span&gt;&lt;span&gt;())
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span&gt;(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Enter the id (last value) of the album to download: &lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;end &lt;&#x2F;span&gt;&lt;span&gt;= &amp;#39;&amp;#39;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;downloadAlbum&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;input&lt;&#x2F;span&gt;&lt;span&gt;())
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To make it more usable, there needs to be some proper error handling with retries, possibly making use of pagination, and tagging music (since the resulting files lack those), but it goes out of the scope of the write-up. Also, it&#x27;s not what I needed it for :)&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

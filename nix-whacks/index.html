@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title></title>
+    <meta name="description" content="">
+
+    
+    
+
+    
+<meta property="og:title" content="Nix whacks">
+<meta property="og:description" content="">
+<meta property="og:url" content="https:&#x2F;&#x2F;hyperfocussurfer.github.io&#x2F;nix-whacks&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="">
+
+
+
+    <!-- css -->
+    <noscript>
+        <style>
+            .theme-switcher {
+                display: none;
+            }
+        </style>
+    </noscript>
+    <link rel="stylesheet" href="/reset.css">
+    <link rel="stylesheet" href="/feather.css">
+    
+    
+    <link rel="stylesheet" href="/syntax-theme-light.css" media="screen" />
+    <link rel="stylesheet" href="/syntax-theme-dark.css" media="screen and (prefers-color-scheme: dark)" />
+    
+    
+
+    <link rel="stylesheet" id="syntax" />
+
+    
+
+    
+
+    
+    
+</head>
+
+<body >
+    <div class="root">
+
+        <nav>
+            <div class="flex padded">
+                <div class="flex fill vcenter">
+                    <a href="/">
+                        <h4>Home</h4>
+                    </a>
+                </div>
+                
+                <button class="theme-switcher"></button>
+                
+            </div>
+            
+        </nav>
+
+
+
+        
+<div class='container'>
+	<section class="post">
+		<div class="title-and-info">
+			<h2>Nix whacks</h2>
+			<div class="info">
+				<span>2025 Apr 28</span>
+
+				
+
+				
+			</div>
+		</div>
+		<article>
+			
+			
+			
+			
+
+			
+
+
+			<p>A loose collection of useful nix snippets.</p>
+<h2 id="patch-in-a-pr-while-building-a-package">Patch-in a PR while building a package</h2>
+<p>Say, we want to include the <a href="https://github.com/franciscolourenco/done/pull/147">147th PR to done.fish</a></p>
+<ul>
+<li>append <code>.diff</code> or <code>.patch</code> to the url, which will redirect you to <a href="https://patch-diff.githubusercontent.com/raw/franciscolourenco/done/pull/147.diff">https://patch-diff.githubusercontent.com/raw/franciscolourenco/done/pull/147.diff</a></li>
+<li>pull and apply the patch via nix:</li>
+</ul>
+<pre data-lang="nix" style="background-color:#2b303b;color:#c0c5ce;" class="language-nix "><code class="language-nix" data-lang="nix"><span>(</span><span style="color:#bf616a;">fishPlugins</span><span>.</span><span style="color:#bf616a;">done</span><span>.</span><span style="color:#bf616a;">overrideAttrs </span><span>(final: prev: {
+</span><span>  </span><span style="color:#d08770;">patches </span><span>= [(</span><span style="color:#bf616a;">fetchpatch </span><span>{
+</span><span>    </span><span style="color:#d08770;">url </span><span>= &quot;</span><span style="color:#a3be8c;">https://patch-diff.githubusercontent.com/raw/franciscolourenco/done/pull/147.diff</span><span>&quot;;
+</span><span>    </span><span style="color:#d08770;">hash </span><span>= &quot;</span><span style="color:#a3be8c;">sha256-tIXVfXLSLwc54Z3HZcfwgGv1vEzAaBVNAjeq4vVNxNI=</span><span>&quot;;
+</span><span>  })];
+</span><span>}))
+</span></code></pre>
+<p>[<a href="https://discourse.nixos.org/t/easiest-way-to-include-nixpkgs-pull-request/39307/3">Source</a>]</p>
+<h2 id="overriding-non-trivial-builders">Overriding non-trivial builders</h2>
+<p>Default <code>overrideAttrs</code> is applied to the result of various <code>buildRustPackage</code>s and <code>buildGoModule</code>s, so if you want to override some builder-specific stuff (like <code>cargoHash</code>), you need to <code>override</code> the builder instead:</p>
+<pre data-lang="nix" style="background-color:#2b303b;color:#c0c5ce;" class="language-nix "><code class="language-nix" data-lang="nix"><span>(</span><span style="color:#bf616a;">tectonic-unwrapped</span><span>.</span><span style="color:#bf616a;">override </span><span>(old: {
+</span><span>  </span><span style="color:#d08770;">rustPlatform </span><span>= </span><span style="color:#bf616a;">old</span><span>.</span><span style="color:#bf616a;">rustPlatform </span><span>// {
+</span><span>    </span><span style="color:#d08770;">buildRustPackage </span><span>= args: </span><span style="color:#bf616a;">old</span><span>.</span><span style="color:#bf616a;">rustPlatform</span><span>.</span><span style="color:#bf616a;">buildRustPackage </span><span>(</span><span style="color:#bf616a;">args </span><span>// {
+</span><span>      </span><span style="color:#65737e;"># override src/cargoHash/buildFeatures here
+</span><span>    });
+</span><span>  };
+</span><span>}))
+</span></code></pre>
+<p>[<a href="https://discourse.nixos.org/t/is-it-possible-to-override-cargosha256-in-buildrustpackage/4393/9">Source</a>]</p>
+
+			
+
+
+		</article>
+	</section>
+	
+	<div id="cusdis">
+		
+	</div>
+</div>
+
+
+        <footer>
+            
+            <p>
+                Feather theme by <a href="https://doomy.org">doomy</a>&nbsp;&nbsp;-&nbsp;&nbsp; Built with <a
+                    href="https://getzola.org">Zola</a>
+            </p>
+            
+        </footer>
+    </div>
+    
+    <script>
+        function change_theme(theme) {
+            if (theme == "light") {
+                document.body.classList.remove("dark");
+                document.body.classList.add("light");
+                document.querySelector('#syntax').href = '/syntax-theme-light.css';
+            } else if (theme == "dark") {
+                document.body.classList.add("dark");
+                document.body.classList.remove("light");
+                document.querySelector('#syntax').href = '/syntax-theme-dark.css';
+            }
+            localStorage.setItem("theme", theme);
+        }
+
+        window.addEventListener('load', () => {
+            // Select the button
+            const theme = (function () {
+                const stored = localStorage.getItem("theme");
+                if (stored == "null") {
+                    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                        return "dark";
+                    } else {
+                        return "light";
+                    }
+                } else {
+                    return stored;
+                }
+            })();
+
+            change_theme(theme);
+
+            // Listen for a click on the button
+            document.querySelector(".theme-switcher").addEventListener("click", function () {
+                if (!document.body.classList.contains("dark")) {
+                    change_theme("dark");
+                } else {
+                    change_theme("light");
+                }
+            });
+
+        });
+    </script>
+    
+    <script src="/js/footnote.js"></script>
+</body>
+
+</html>

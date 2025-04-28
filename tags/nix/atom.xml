@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title> - nix</title>
+    <link rel="self" type="application/atom+xml" href="https://hyperfocussurfer.github.io/tags/nix/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-04-28T00:00:00+00:00</updated>
+    <id>https://hyperfocussurfer.github.io/tags/nix/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Nix whacks</title>
+        <published>2025-04-28T00:00:00+00:00</published>
+        <updated>2025-04-28T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io/nix-whacks/"/>
+        <id>https://hyperfocussurfer.github.io/nix-whacks/</id>
+        
+        <content type="html" xml:base="https://hyperfocussurfer.github.io/nix-whacks/">&lt;p&gt;A loose collection of useful nix snippets.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;patch-in-a-pr-while-building-a-package&quot;&gt;Patch-in a PR while building a package&lt;&#x2F;h2&gt;
+&lt;p&gt;Say, we want to include the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;franciscolourenco&#x2F;done&#x2F;pull&#x2F;147&quot;&gt;147th PR to done.fish&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;append &lt;code&gt;.diff&lt;&#x2F;code&gt; or &lt;code&gt;.patch&lt;&#x2F;code&gt; to the url, which will redirect you to &lt;a href=&quot;https:&#x2F;&#x2F;patch-diff.githubusercontent.com&#x2F;raw&#x2F;franciscolourenco&#x2F;done&#x2F;pull&#x2F;147.diff&quot;&gt;https:&#x2F;&#x2F;patch-diff.githubusercontent.com&#x2F;raw&#x2F;franciscolourenco&#x2F;done&#x2F;pull&#x2F;147.diff&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;pull and apply the patch via nix:&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;pre data-lang=&quot;nix&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-nix &quot;&gt;&lt;code class=&quot;language-nix&quot; data-lang=&quot;nix&quot;&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fishPlugins&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;done&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;overrideAttrs &lt;&#x2F;span&gt;&lt;span&gt;(final: prev: {
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;patches &lt;&#x2F;span&gt;&lt;span&gt;= [(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fetchpatch &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;url &lt;&#x2F;span&gt;&lt;span&gt;= &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;patch-diff.githubusercontent.com&#x2F;raw&#x2F;franciscolourenco&#x2F;done&#x2F;pull&#x2F;147.diff&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;hash &lt;&#x2F;span&gt;&lt;span&gt;= &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;sha256-tIXVfXLSLwc54Z3HZcfwgGv1vEzAaBVNAjeq4vVNxNI=&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span&gt;  })];
+&lt;&#x2F;span&gt;&lt;span&gt;}))
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;[&lt;a href=&quot;https:&#x2F;&#x2F;discourse.nixos.org&#x2F;t&#x2F;easiest-way-to-include-nixpkgs-pull-request&#x2F;39307&#x2F;3&quot;&gt;Source&lt;&#x2F;a&gt;]&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;overriding-non-trivial-builders&quot;&gt;Overriding non-trivial builders&lt;&#x2F;h2&gt;
+&lt;p&gt;Default &lt;code&gt;overrideAttrs&lt;&#x2F;code&gt; is applied to the result of various &lt;code&gt;buildRustPackage&lt;&#x2F;code&gt;s and &lt;code&gt;buildGoModule&lt;&#x2F;code&gt;s, so if you want to override some builder-specific stuff (like &lt;code&gt;cargoHash&lt;&#x2F;code&gt;), you need to &lt;code&gt;override&lt;&#x2F;code&gt; the builder instead:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;nix&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-nix &quot;&gt;&lt;code class=&quot;language-nix&quot; data-lang=&quot;nix&quot;&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tectonic-unwrapped&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;override &lt;&#x2F;span&gt;&lt;span&gt;(old: {
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;rustPlatform &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;old&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;rustPlatform &lt;&#x2F;span&gt;&lt;span&gt;&#x2F;&#x2F; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;buildRustPackage &lt;&#x2F;span&gt;&lt;span&gt;= args: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;old&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;rustPlatform&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;buildRustPackage &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;args &lt;&#x2F;span&gt;&lt;span&gt;&#x2F;&#x2F; {
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# override src&#x2F;cargoHash&#x2F;buildFeatures here
+&lt;&#x2F;span&gt;&lt;span&gt;    });
+&lt;&#x2F;span&gt;&lt;span&gt;  };
+&lt;&#x2F;span&gt;&lt;span&gt;}))
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;[&lt;a href=&quot;https:&#x2F;&#x2F;discourse.nixos.org&#x2F;t&#x2F;is-it-possible-to-override-cargosha256-in-buildrustpackage&#x2F;4393&#x2F;9&quot;&gt;Source&lt;&#x2F;a&gt;]&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

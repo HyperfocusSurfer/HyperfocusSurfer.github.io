@@ -9,11 +9,6 @@ taxonomies = [{ name = "tags", feed = true }]
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = true
 
-[markdown]
-
-[markdown.highlighting]
-style = "inline"
-
 [extra]
 
 [extra.feather]

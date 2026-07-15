@@ -10,6 +10,7 @@ taxonomies = [{ name = "tags", feed = true }]
 build_search_index = true
 
 [markdown]
+
 [markdown.highlighting]
 style = "inline"
 

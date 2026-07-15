@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title> - nix</title>
+    <link rel="self" type="application/atom+xml" href="https://hyperfocussurfer.github.io/tags/nix/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2026-07-15T00:00:00+00:00</updated>
+    <id>https://hyperfocussurfer.github.io/tags/nix/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Perfect keyboard-driven web browsing on NixOS</title>
+        <published>2026-07-15T00:00:00+00:00</published>
+        <updated>2026-07-15T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io/ff-vim-mode/"/>
+        <id>https://hyperfocussurfer.github.io/ff-vim-mode/</id>
+        
+        <content type="html" xml:base="https://hyperfocussurfer.github.io/ff-vim-mode/">&lt;p&gt;In the life of every long term vim user there comes a moment when they start wanting
+to bring modal editing to almost every program they often use. While trivial for
+shells and many cli applications, browsers tend to be a bit more problematic in that regard.
+Here&#x27;s my descent into that rabbithole.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;setup-1-switch-browsers&quot;&gt;Setup #1, switch browsers&lt;&#x2F;h2&gt;
+&lt;p&gt;There are projects like &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;fanglingsu&#x2F;vimb&quot;&gt;vimb&lt;&#x2F;a&gt; and &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;qutebrowser&#x2F;qutebrowser&quot;&gt;qutebrowser&lt;&#x2F;a&gt;,
+and they indeed do shine at being modal and keyboard-driven, but the ultimate deal-breaker for me was the lack of extensions,
+at least when I tested those. Note that it happened like 8 years ago, so now the situation may be quite different.&lt;&#x2F;p&gt;
+&lt;p&gt;Basically, after a few months I went back to good old firefox, since the ease of use and the power of
+ublock, violentmonkey, sponsorblock and alike was too much to give up.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;setup-2-webextensions&quot;&gt;Setup #2, webextensions&lt;&#x2F;h2&gt;
+&lt;p&gt;Naturally, I then looked into making firefox modal. First, I tried &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;philc&#x2F;vimium&quot;&gt;vimium&lt;&#x2F;a&gt;, and was generally happy
+up until I discovered &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;tridactyl&#x2F;tridactyl&quot;&gt;tridactyl&lt;&#x2F;a&gt; after a few more months. I more or less loved it at first
+sight due to a great extensibility and the existence of the native client, which, among other things, provides the ability to open
+protected browser pages from tridactyl&#x27;s cmdline. However, there&#x27;s a big &quot;but&quot;: tridactyl itself still doesn&#x27;t load on said pages.&lt;&#x2F;p&gt;
+&lt;p&gt;For some pages, it can be mitigated, but others, like the built-in pdf viewer, various settings pages or even not-yet-loaded tabs remain out of its reach. Nevertheless, with occasional swearing I&#x27;ve been using it for the last couple of years.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;setup-3-perfection&quot;&gt;Setup #3, perfection&lt;&#x2F;h2&gt;
+&lt;p&gt;Finally, a couple of months ago I&#x27;ve stumbled upon &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;akhodakivskiy&#x2F;VimFx&quot;&gt;VimFx&lt;&#x2F;a&gt;, a &lt;em&gt;legacy&lt;&#x2F;em&gt; firefox extension that seems to avoid these issues by not using the webextensions api at all, instead relying on the &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;gir.st&#x2F;blog&#x2F;legacyfox.htm&quot;&gt;LegacyFox&lt;&#x2F;a&gt; compatibility shim, that brings the older API back. Installing it on NixOS, however, is a bit different from both the nix way of installing regular extensions and the guides provided in the repos. Anyways, here&#x27;s what I came up with.&lt;&#x2F;p&gt;
+&lt;p&gt;The snippet here targets librewolf + home manager, since it&#x27;s my main browser of choice at the moment, but it shouldn&#x27;t be too different from firefox-esr and, possibly, the regular firefox (not the bin version, tho, since it for doesn&#x27;t support disabling xpi signature checks, IIRC).&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;nix&quot;&gt;programs.librewolf = {
+  enable = true;
+  package = (
+    pkgs.librewolf.overrideAttrs (
+      prev:
+      let
+        legacyFox = pkgs.fetchgit {
+          url = &amp;quot;https:&#x2F;&#x2F;git.gir.st&#x2F;LegacyFox.git&amp;quot;;
+          hash = &amp;quot;sha256-vCRIiYdl7t3I5asndJBjSRVFu9ADBfSEkyKdlgbMxww=&amp;quot;;
+        };
+        vimfx = pkgs.fetchurl {
+          url = &amp;quot;https:&#x2F;&#x2F;github.com&#x2F;akhodakivskiy&#x2F;VimFx&#x2F;releases&#x2F;download&#x2F;v0.27.6&#x2F;VimFx.xpi&amp;quot;;
+          hash = &amp;quot;sha256-tC&#x2F;98IKleMBZPdtEYVY8H2KmGKz3CyRhKjGSK2yUdx8=&amp;quot;;
+        };
+      in
+      {
+        buildCommand = prev.buildCommand + &amp;#39;&amp;#39;
+          libDir=$out&#x2F;lib&#x2F;librewolf
+          cp -r ${legacyFox}&#x2F;{legacy.manifest,legacy} $libDir&#x2F;
+          cp ${vimfx} $libDir&#x2F;distribution&#x2F;extensions&#x2F;
+          echo &amp;quot;&#x2F;&#x2F; legacyFox installation&amp;quot; &amp;gt;&amp;gt; $libDir&#x2F;mozilla.cfg
+          cat ${legacyFox}&#x2F;config.js &amp;gt;&amp;gt; $libDir&#x2F;mozilla.cfg
+        &amp;#39;&amp;#39;;
+      }
+    )
+  );
+};
+
+home.file.&amp;quot;.librewolf&#x2F;librewolf.overrides.cfg&amp;quot; = {
+  text = &amp;#39;&amp;#39;
+    &#x2F;&#x2F; First line must be a comment
+    pref(&amp;quot;extensions.VimFx.config_file_directory&amp;quot;, &amp;quot;&#x2F;home&#x2F;fl42v&#x2F;.config&#x2F;vimfx&amp;quot;)
+    pref(&amp;quot;security.sandbox.content.read_path_whitelist&amp;quot;, &amp;quot;&#x2F;home&#x2F;fl42v&#x2F;.config&#x2F;vimfx&amp;quot;)
+    pref(&amp;quot;general.config.sandbox_enabled&amp;quot;, false);
+  &amp;#39;&amp;#39;;
+};
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Basically, what it does is modifies the &lt;code&gt;pkgs.wrapFirefox&lt;&#x2F;code&gt; (which &lt;code&gt;pkgs.librewolf&lt;&#x2F;code&gt; is an instance of) to also install LegacyFox.
+Then we use the fact that librewolf&#x27;s mozilla.cfg includes &lt;code&gt;~&#x2F;.librewolf&#x2F;librewolf.overrides.cfg&lt;&#x2F;code&gt; to do the job of &lt;code&gt;defaults&#x2F;pref&#x2F;config-prefs.js&lt;&#x2F;code&gt;. Since this is librewolf-specific, the same lines can be added to mozilla.cfg or even the original location. I just found this way more simple to test.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;zen-browser-and-troubleshooting&quot;&gt;Zen-browser (and troubleshooting)&lt;&#x2F;h3&gt;
+&lt;p&gt;Since I also use zen mostly due to eyecandy and its better implementation of vertical tabs, I wanted to VimFx it as well, but the installation turned out to be more involved:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;nix&quot;&gt;programs.Zen-browser = {
+  enable = true;
+  package = (pkgs.wrapFirefox (
+    inputs.zen-browser.packages.&amp;quot;${pkgs.stdenv.hostPlatform.system}&amp;quot;.beta-unwrapped.overrideAttrs (
+      prev:
+      let
+        legacyFox = pkgs.fetchgit {
+          url = &amp;quot;https:&#x2F;&#x2F;git.gir.st&#x2F;LegacyFox.git&amp;quot;;
+          hash = &amp;quot;sha256-vCRIiYdl7t3I5asndJBjSRVFu9ADBfSEkyKdlgbMxww=&amp;quot;;
+        };
+        vimfx = pkgs.fetchurl {
+          url = &amp;quot;https:&#x2F;&#x2F;github.com&#x2F;akhodakivskiy&#x2F;VimFx&#x2F;releases&#x2F;download&#x2F;v0.27.6&#x2F;VimFx.xpi&amp;quot;;
+          hash = &amp;quot;sha256-tC&#x2F;98IKleMBZPdtEYVY8H2KmGKz3CyRhKjGSK2yUdx8=&amp;quot;;
+        };
+      in
+      {
+        postInstall = &amp;#39;&amp;#39;
+          libDir=$(find &amp;quot;$out&#x2F;lib&amp;quot; -maxdepth 1 -name &amp;quot;zen-bin-*&amp;quot;)
+          chmod +w $libDir
+          mkdir -p $libDir&#x2F;distribution&#x2F;extensions&#x2F;
+          chmod +w $libDir&#x2F;distribution&#x2F;extensions&#x2F;
+          mkdir -p $libDir&#x2F;defaults&#x2F;pref&#x2F;
+          chmod +w $libDir&#x2F;defaults&#x2F;pref&#x2F;
+          touch $libDir&#x2F;legacyfox.js
+          chmod +w $libDir&#x2F;legacyfox.js
+          touch $libDir&#x2F;defaults&#x2F;pref&#x2F;config-prefs.js
+          chmod +w $libDir&#x2F;defaults&#x2F;pref&#x2F;config-prefs.js
+
+          cp -r ${legacyFox}&#x2F;{legacy.manifest,legacy} $libDir&#x2F;
+          cp ${vimfx} $libDir&#x2F;distribution&#x2F;extensions&#x2F;
+          # &amp;#39;cause zen folks are too smart to follow the firefox versioning
+          sed -i &amp;#39;s&#x2F;115.0&#x2F;1.0.0&#x2F;&amp;#39; $libDir&#x2F;distribution&#x2F;extensions&#x2F;*-VimFx.xpi
+          echo &amp;quot;&#x2F;&#x2F; legacyFox installation&amp;quot; &amp;gt;&amp;gt; $libDir&#x2F;legacyfox.js
+          cat ${legacyFox}&#x2F;config.js &amp;gt;&amp;gt; $libDir&#x2F;legacyfox.js
+
+          sed &amp;#39;s&#x2F;config\.js&#x2F;legacyfox.js&#x2F;&amp;#39; ${legacyFox}&#x2F;defaults&#x2F;pref&#x2F;config-prefs.js &amp;gt;&amp;gt; $libDir&#x2F;defaults&#x2F;pref&#x2F;config-prefs.js
+
+        &amp;#39;&amp;#39;;
+      }
+    )
+  ) {});
+};
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Right off the bat, you can see the 1st difference: it&#x27;s the unwrapped package that&#x27;s overridden and only then wrapped with wrapFirefox.
+The reason is both simple and not: for some reason even after being wrapped, zen tries to locate the &lt;code&gt;legacy.manifest&lt;&#x2F;code&gt; in the &lt;code&gt;-unwrapped&lt;&#x2F;code&gt; derivation. This might be zen-specific or applicable to all binary releases (I&#x27;m too lazy to check).&lt;&#x2F;p&gt;
+&lt;p&gt;Now, the troubleshooting steps that led me to that finding. First of all, I checked if the installation of LegacyFox was successful by trying to navigate to the resource:&#x2F;&#x2F;legacy&#x2F; url. If it was, I should&#x27;ve seen a reguar-ish filesystem listing page, similar to what one sees on file:&#x2F;&#x2F;&#x2F;home&#x2F;&lt;username&gt;&#x2F;some&#x2F;directory&#x2F; urls. If the page is empty, the installation has failed.&lt;&#x2F;p&gt;
+&lt;p&gt;After making sure the settings from &lt;code&gt;config-prefs.js&lt;&#x2F;code&gt; were visible in about:config and checking that the files were indeed there (nushell: &lt;code&gt;which zen-beta  | get path.0 | readlink $in | readlink $in | path dirname --num-levels 2 | glob $&quot;($in)&#x2F;lib&#x2F;zen-bin-*&quot; | get 0 | ls $in&lt;&#x2F;code&gt;), I decided to trace the manifest loading manually as follows:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;C-S-I&gt; to open DevTools&lt;&#x2F;li&gt;
+&lt;li&gt;F1 to open DevTools&#x27; settings&lt;&#x2F;li&gt;
+&lt;li&gt;check the &lt;code&gt;Enable remote debugging&lt;&#x2F;code&gt; option&lt;&#x2F;li&gt;
+&lt;li&gt;close DevTools&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;C-A-S-I&gt; to open DevTools for the browser itself, then allow the connection&lt;&#x2F;li&gt;
+&lt;li&gt;go to console tab, then paste the &lt;code&gt;config.js&lt;&#x2F;code&gt;&#x27; contents line-by-line&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;The last step shoed me an error when the registering the manifest along with the path firefox tried to load it from.&lt;&#x2F;p&gt;
+&lt;p&gt;The 2nd notable change is that the mozilla.cfg is replaced with &lt;code&gt;legacyfox.js&lt;&#x2F;code&gt;. The reason here is that wrapFirefox tries to create one and fails when it already exists. Using this name instead of &lt;code&gt;config.js&lt;&#x2F;code&gt; is a personal preference and can be disregarded.&lt;&#x2F;p&gt;
+&lt;p&gt;Finally, here&#x27;s using &lt;code&gt;sed&lt;&#x2F;code&gt; on VimFx.xpi. This is highly zen-specific and is basically a workaround for its devs deciding to reinvent the wheel &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;zen-browser&#x2F;desktop&#x2F;discussions&#x2F;12025&quot;&gt;again&lt;&#x2F;a&gt; by not following firefox&#x27; versioning for no reason, hence the addon fails to install due to its target firefox 115 seeming quite a bit newer than zen&#x27;s 1.2.something. Also, I&#x27;m not entirely sure if placing the addon in distribution&#x2F;extensions actually installs it. It may happen on the 2nd start of the browser or not at all, in which case you can always install it manually (not declarative, but at least it works).&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;next-steps&quot;&gt;Next steps&lt;&#x2F;h2&gt;
+&lt;p&gt;While VimFx gives you a better way to interact with the browser itself, it doesn&#x27;t tackle the text input. This can be mitigated with the help of &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;glacambre&#x2F;firenvim&quot;&gt;firenvim&lt;&#x2F;a&gt;, which turns the browser into an actual neovim client (pretty much embeds nvim into input fields when triggered).&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Nix whacks</title>
+        <published>2025-04-28T00:00:00+00:00</published>
+        <updated>2025-04-28T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://hyperfocussurfer.github.io/nix-whacks/"/>
+        <id>https://hyperfocussurfer.github.io/nix-whacks/</id>
+        
+        <content type="html" xml:base="https://hyperfocussurfer.github.io/nix-whacks/">&lt;p&gt;A loose collection of useful nix snippets.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;patch-in-a-pr-while-building-a-package&quot;&gt;Patch-in a PR while building a package&lt;&#x2F;h2&gt;
+&lt;p&gt;Say, we want to include the &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;franciscolourenco&#x2F;done&#x2F;pull&#x2F;147&quot;&gt;147th PR to done.fish&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;append &lt;code&gt;.diff&lt;&#x2F;code&gt; or &lt;code&gt;.patch&lt;&#x2F;code&gt; to the url, which will redirect you to &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;patch-diff.githubusercontent.com&#x2F;raw&#x2F;franciscolourenco&#x2F;done&#x2F;pull&#x2F;147.diff&quot;&gt;https:&#x2F;&#x2F;patch-diff.githubusercontent.com&#x2F;raw&#x2F;franciscolourenco&#x2F;done&#x2F;pull&#x2F;147.diff&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;pull and apply the patch via nix:&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;nix&quot;&gt;(fishPlugins.done.overrideAttrs (final: prev: {
+  patches = [(fetchpatch {
+    url = &amp;quot;https:&#x2F;&#x2F;patch-diff.githubusercontent.com&#x2F;raw&#x2F;franciscolourenco&#x2F;done&#x2F;pull&#x2F;147.diff&amp;quot;;
+    hash = &amp;quot;sha256-tIXVfXLSLwc54Z3HZcfwgGv1vEzAaBVNAjeq4vVNxNI=&amp;quot;;
+  })];
+}))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;[&lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;discourse.nixos.org&#x2F;t&#x2F;easiest-way-to-include-nixpkgs-pull-request&#x2F;39307&#x2F;3&quot;&gt;Source&lt;&#x2F;a&gt;]&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;overriding-non-trivial-builders&quot;&gt;Overriding non-trivial builders&lt;&#x2F;h2&gt;
+&lt;p&gt;Default &lt;code&gt;overrideAttrs&lt;&#x2F;code&gt; is applied to the result of various &lt;code&gt;buildRustPackage&lt;&#x2F;code&gt;s and &lt;code&gt;buildGoModule&lt;&#x2F;code&gt;s, so if you want to override some builder-specific stuff (like &lt;code&gt;cargoHash&lt;&#x2F;code&gt;), you need to &lt;code&gt;override&lt;&#x2F;code&gt; the builder instead:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;nix&quot;&gt;(tectonic-unwrapped.override (old: {
+  rustPlatform = old.rustPlatform &#x2F;&#x2F; {
+    buildRustPackage = args: old.rustPlatform.buildRustPackage (args &#x2F;&#x2F; {
+      # override src&#x2F;cargoHash&#x2F;buildFeatures here
+    });
+  };
+}))
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;[&lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;discourse.nixos.org&#x2F;t&#x2F;is-it-possible-to-override-cargosha256-in-buildrustpackage&#x2F;4393&#x2F;9&quot;&gt;Source&lt;&#x2F;a&gt;]&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

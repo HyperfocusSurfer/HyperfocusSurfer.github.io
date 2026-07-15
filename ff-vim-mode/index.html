@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title></title>
+    <meta name="description" content="">
+
+    
+    
+
+    
+<meta property="og:title" content="Perfect keyboard-driven web browsing on NixOS">
+<meta property="og:description" content="">
+<meta property="og:url" content="https:&#x2F;&#x2F;hyperfocussurfer.github.io&#x2F;ff-vim-mode&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="">
+
+
+
+    <!-- css -->
+    <noscript>
+        <style>
+            .theme-switcher {
+                display: none;
+            }
+        </style>
+    </noscript>
+    <link rel="stylesheet" href="/reset.css">
+    <link rel="stylesheet" href="/feather.css">
+    
+    
+    <link rel="stylesheet" href="/giallo-light.css" media="screen and (prefers-color-scheme: light)" />
+    <link rel="stylesheet" href="/giallo-dark.css" media="screen and (prefers-color-scheme: dark)" />
+    
+    
+
+    <link rel="stylesheet" id="syntax" />
+
+    
+
+    
+
+    
+    
+</head>
+
+<body >
+    <div class="root">
+
+        <nav>
+            <div class="flex padded">
+                <div class="flex vcenter gap-large">
+                    <a href="/">
+                        <h4>Home</h4>
+                    </a>
+                    
+                </div>
+                <div class="flex fill"></div>
+                
+                <button class="theme-switcher" aria-label="Switch themes"></button>
+                
+            </div>
+            
+        </nav>
+
+
+
+        
+<div class='container'>
+	<section class="post">
+		<div class="title-and-info">
+			<h2>Perfect keyboard-driven web browsing on NixOS</h2>
+			<div class="info">
+				<span>2026 Jul 15</span>
+
+				
+
+				
+			</div>
+		</div>
+		<article>
+			
+			
+			
+			
+
+			
+
+
+			<p>In the life of every long term vim user there comes a moment when they start wanting
+to bring modal editing to almost every program they often use. While trivial for
+shells and many cli applications, browsers tend to be a bit more problematic in that regard.
+Here's my descent into that rabbithole.</p>
+<h2 id="setup-1-switch-browsers">Setup #1, switch browsers</h2>
+<p>There are projects like <a rel="external" href="https://github.com/fanglingsu/vimb">vimb</a> and <a rel="external" href="https://github.com/qutebrowser/qutebrowser">qutebrowser</a>,
+and they indeed do shine at being modal and keyboard-driven, but the ultimate deal-breaker for me was the lack of extensions,
+at least when I tested those. Note that it happened like 8 years ago, so now the situation may be quite different.</p>
+<p>Basically, after a few months I went back to good old firefox, since the ease of use and the power of
+ublock, violentmonkey, sponsorblock and alike was too much to give up.</p>
+<h2 id="setup-2-webextensions">Setup #2, webextensions</h2>
+<p>Naturally, I then looked into making firefox modal. First, I tried <a rel="external" href="https://github.com/philc/vimium">vimium</a>, and was generally happy
+up until I discovered <a rel="external" href="https://github.com/tridactyl/tridactyl">tridactyl</a> after a few more months. I more or less loved it at first
+sight due to a great extensibility and the existence of the native client, which, among other things, provides the ability to open
+protected browser pages from tridactyl's cmdline. However, there's a big "but": tridactyl itself still doesn't load on said pages.</p>
+<p>For some pages, it can be mitigated, but others, like the built-in pdf viewer, various settings pages or even not-yet-loaded tabs remain out of its reach. Nevertheless, with occasional swearing I've been using it for the last couple of years.</p>
+<h2 id="setup-3-perfection">Setup #3, perfection</h2>
+<p>Finally, a couple of months ago I've stumbled upon <a rel="external" href="https://github.com/akhodakivskiy/VimFx">VimFx</a>, a <em>legacy</em> firefox extension that seems to avoid these issues by not using the webextensions api at all, instead relying on the <a rel="external" href="https://gir.st/blog/legacyfox.htm">LegacyFox</a> compatibility shim, that brings the older API back. Installing it on NixOS, however, is a bit different from both the nix way of installing regular extensions and the guides provided in the repos. Anyways, here's what I came up with.</p>
+<p>The snippet here targets librewolf + home manager, since it's my main browser of choice at the moment, but it shouldn't be too different from firefox-esr and, possibly, the regular firefox (not the bin version, tho, since it for doesn't support disabling xpi signature checks, IIRC).</p>
+<pre><code data-lang="nix">programs.librewolf = {
+  enable = true;
+  package = (
+    pkgs.librewolf.overrideAttrs (
+      prev:
+      let
+        legacyFox = pkgs.fetchgit {
+          url = &quot;https://git.gir.st/LegacyFox.git&quot;;
+          hash = &quot;sha256-vCRIiYdl7t3I5asndJBjSRVFu9ADBfSEkyKdlgbMxww=&quot;;
+        };
+        vimfx = pkgs.fetchurl {
+          url = &quot;https://github.com/akhodakivskiy/VimFx/releases/download/v0.27.6/VimFx.xpi&quot;;
+          hash = &quot;sha256-tC/98IKleMBZPdtEYVY8H2KmGKz3CyRhKjGSK2yUdx8=&quot;;
+        };
+      in
+      {
+        buildCommand = prev.buildCommand + &#39;&#39;
+          libDir=$out/lib/librewolf
+          cp -r ${legacyFox}/{legacy.manifest,legacy} $libDir/
+          cp ${vimfx} $libDir/distribution/extensions/
+          echo &quot;// legacyFox installation&quot; &gt;&gt; $libDir/mozilla.cfg
+          cat ${legacyFox}/config.js &gt;&gt; $libDir/mozilla.cfg
+        &#39;&#39;;
+      }
+    )
+  );
+};
+
+home.file.&quot;.librewolf/librewolf.overrides.cfg&quot; = {
+  text = &#39;&#39;
+    // First line must be a comment
+    pref(&quot;extensions.VimFx.config_file_directory&quot;, &quot;/home/fl42v/.config/vimfx&quot;)
+    pref(&quot;security.sandbox.content.read_path_whitelist&quot;, &quot;/home/fl42v/.config/vimfx&quot;)
+    pref(&quot;general.config.sandbox_enabled&quot;, false);
+  &#39;&#39;;
+};
+</code></pre>
+<p>Basically, what it does is modifies the <code>pkgs.wrapFirefox</code> (which <code>pkgs.librewolf</code> is an instance of) to also install LegacyFox.
+Then we use the fact that librewolf's mozilla.cfg includes <code>~/.librewolf/librewolf.overrides.cfg</code> to do the job of <code>defaults/pref/config-prefs.js</code>. Since this is librewolf-specific, the same lines can be added to mozilla.cfg or even the original location. I just found this way more simple to test.</p>
+<h3 id="zen-browser-and-troubleshooting">Zen-browser (and troubleshooting)</h3>
+<p>Since I also use zen mostly due to eyecandy and its better implementation of vertical tabs, I wanted to VimFx it as well, but the installation turned out to be more involved:</p>
+<pre><code data-lang="nix">programs.Zen-browser = {
+  enable = true;
+  package = (pkgs.wrapFirefox (
+    inputs.zen-browser.packages.&quot;${pkgs.stdenv.hostPlatform.system}&quot;.beta-unwrapped.overrideAttrs (
+      prev:
+      let
+        legacyFox = pkgs.fetchgit {
+          url = &quot;https://git.gir.st/LegacyFox.git&quot;;
+          hash = &quot;sha256-vCRIiYdl7t3I5asndJBjSRVFu9ADBfSEkyKdlgbMxww=&quot;;
+        };
+        vimfx = pkgs.fetchurl {
+          url = &quot;https://github.com/akhodakivskiy/VimFx/releases/download/v0.27.6/VimFx.xpi&quot;;
+          hash = &quot;sha256-tC/98IKleMBZPdtEYVY8H2KmGKz3CyRhKjGSK2yUdx8=&quot;;
+        };
+      in
+      {
+        postInstall = &#39;&#39;
+          libDir=$(find &quot;$out/lib&quot; -maxdepth 1 -name &quot;zen-bin-*&quot;)
+          chmod +w $libDir
+          mkdir -p $libDir/distribution/extensions/
+          chmod +w $libDir/distribution/extensions/
+          mkdir -p $libDir/defaults/pref/
+          chmod +w $libDir/defaults/pref/
+          touch $libDir/legacyfox.js
+          chmod +w $libDir/legacyfox.js
+          touch $libDir/defaults/pref/config-prefs.js
+          chmod +w $libDir/defaults/pref/config-prefs.js
+
+          cp -r ${legacyFox}/{legacy.manifest,legacy} $libDir/
+          cp ${vimfx} $libDir/distribution/extensions/
+          # &#39;cause zen folks are too smart to follow the firefox versioning
+          sed -i &#39;s/115.0/1.0.0/&#39; $libDir/distribution/extensions/*-VimFx.xpi
+          echo &quot;// legacyFox installation&quot; &gt;&gt; $libDir/legacyfox.js
+          cat ${legacyFox}/config.js &gt;&gt; $libDir/legacyfox.js
+
+          sed &#39;s/config\.js/legacyfox.js/&#39; ${legacyFox}/defaults/pref/config-prefs.js &gt;&gt; $libDir/defaults/pref/config-prefs.js
+
+        &#39;&#39;;
+      }
+    )
+  ) {});
+};
+</code></pre>
+<p>Right off the bat, you can see the 1st difference: it's the unwrapped package that's overridden and only then wrapped with wrapFirefox.
+The reason is both simple and not: for some reason even after being wrapped, zen tries to locate the <code>legacy.manifest</code> in the <code>-unwrapped</code> derivation. This might be zen-specific or applicable to all binary releases (I'm too lazy to check).</p>
+<p>Now, the troubleshooting steps that led me to that finding. First of all, I checked if the installation of LegacyFox was successful by trying to navigate to the resource://legacy/ url. If it was, I should've seen a reguar-ish filesystem listing page, similar to what one sees on file:///home/<username>/some/directory/ urls. If the page is empty, the installation has failed.</p>
+<p>After making sure the settings from <code>config-prefs.js</code> were visible in about:config and checking that the files were indeed there (nushell: <code>which zen-beta  | get path.0 | readlink $in | readlink $in | path dirname --num-levels 2 | glob $"($in)/lib/zen-bin-*" | get 0 | ls $in</code>), I decided to trace the manifest loading manually as follows:</p>
+<ol>
+<li><C-S-I> to open DevTools</li>
+<li>F1 to open DevTools' settings</li>
+<li>check the <code>Enable remote debugging</code> option</li>
+<li>close DevTools</li>
+<li><C-A-S-I> to open DevTools for the browser itself, then allow the connection</li>
+<li>go to console tab, then paste the <code>config.js</code>' contents line-by-line</li>
+</ol>
+<p>The last step shoed me an error when the registering the manifest along with the path firefox tried to load it from.</p>
+<p>The 2nd notable change is that the mozilla.cfg is replaced with <code>legacyfox.js</code>. The reason here is that wrapFirefox tries to create one and fails when it already exists. Using this name instead of <code>config.js</code> is a personal preference and can be disregarded.</p>
+<p>Finally, here's using <code>sed</code> on VimFx.xpi. This is highly zen-specific and is basically a workaround for its devs deciding to reinvent the wheel <a rel="external" href="https://github.com/zen-browser/desktop/discussions/12025">again</a> by not following firefox' versioning for no reason, hence the addon fails to install due to its target firefox 115 seeming quite a bit newer than zen's 1.2.something. Also, I'm not entirely sure if placing the addon in distribution/extensions actually installs it. It may happen on the 2nd start of the browser or not at all, in which case you can always install it manually (not declarative, but at least it works).</p>
+<h2 id="next-steps">Next steps</h2>
+<p>While VimFx gives you a better way to interact with the browser itself, it doesn't tackle the text input. This can be mitigated with the help of <a rel="external" href="https://github.com/glacambre/firenvim">firenvim</a>, which turns the browser into an actual neovim client (pretty much embeds nvim into input fields when triggered).</p>
+
+			
+
+
+		</article>
+	</section>
+	
+	<div id="cusdis">
+		
+	</div>
+</div>
+
+
+        <footer>
+            
+            <p>
+                Feather theme by <a href="https://doomy.org">doomy</a>&nbsp;&nbsp;-&nbsp;&nbsp; Built with <a
+                    href="https://getzola.org">Zola</a>
+            </p>
+            
+        </footer>
+    </div>
+    
+    <script>
+        function change_theme(theme) {
+            if (theme == "light") {
+                document.body.classList.remove("dark");
+                document.body.classList.add("light");
+                document.querySelector('#syntax').href = '/giallo-light.css';
+            } else if (theme == "dark") {
+                document.body.classList.add("dark");
+                document.body.classList.remove("light");
+                document.querySelector('#syntax').href = '/giallo-dark.css';
+            }
+            localStorage.setItem("theme", theme);
+        }
+
+        window.addEventListener('load', () => {
+            // Select the button
+            const theme = (function () {
+                const stored = localStorage.getItem("theme");
+                if (stored == "null") {
+                    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                        return "dark";
+                    } else {
+                        return "light";
+                    }
+                } else {
+                    return stored;
+                }
+            })();
+
+            change_theme(theme);
+
+            // Listen for a click on the button
+            document.querySelector(".theme-switcher").addEventListener("click", function () {
+                if (!document.body.classList.contains("dark")) {
+                    change_theme("dark");
+                } else {
+                    change_theme("light");
+                }
+            });
+
+        });
+    </script>
+    
+    <script src="/js/footnote.js"></script>
+</body>
+
+</html>

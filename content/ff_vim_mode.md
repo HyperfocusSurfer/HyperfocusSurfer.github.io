@@ -2,7 +2,7 @@
 title = "Perfect keyboard-driven web browsing on NixOS"
 date = 2026-07-15
 [taxonomies]
-tags = ["nix" "vim" "firefox"]
+tags = ["nix", "vim", "firefox"]
 +++
 
 In the life of every long term vim user there comes a moment when they start wanting
